@@ -1,6 +1,37 @@
 spring:
   application:
     name: gateway-service
+  cloud:
+    gateway:
+      server:
+        webflux:
+          routes:
+            - id: user-service
+              uri: http://localhost:8081
+              predicates:
+                - Path=/api/auth/**, /api/users/**
+            - id: chat-service
+              uri: http://localhost:8082
+              predicates:
+                - Path=/api/conversations/**, /api/messages/**
+            - id: trade-service
+              uri: http://localhost:8083
+              predicates:
+                - Path=/api/trades/**
+            - id: chat-ws
+              uri: ws://localhost:8082
+              predicates:
+                - Path=/ws/**
+          globalcors:
+            cors-configurations:
+              '[/api/**]':
+                allowed-origin-patterns: ["http://localhost:*"]
+                allowed-methods: ["*"]
+                allowed-headers: ["*"]
+
+chadet:
+  jwt:
+    public-key: LS0tLS1CRUdJTiBQVUJMSUMgS0VZLS0tLS0KTUlJQklqQU5CZ2txaGtpRzl3MEJBUUVGQUFPQ0FROEFNSUlCQ2dLQ0FRRUFzN2lBQWNNTmFkcDRaS0ViR2lMWApPY2dsV0V3V3F3RTZTZTYxdTMyYTBDNjZVSHFFZGlYRCtyWDhjd0xIS2VFRGlVdFFlUVRIZjZhamo0V3VzbVZaCm5IeXBlWmdTSERyWGRHSElLZ2dSbjdpZWdLdldOWUtDV2lEZEpqMk9rNDhBdTdxM3NYamtITm1HbmJIZG5tSUIKcFVabHFrYU1CVXRNZFRHMnNiWG40Z3dNZzZ1T05LMTdLZ29MS041RW9YYXpSRHB0cFZ6T1ZqRENtZjFtMmErSgpJRWlnZHVsQXFSR3lwbVBZR041dlliYVpCbEhXN0ZVR3BDVHZ5T0xrM3Z2SHhoUjRxYjNyajNMZE9MalZkc3NwCmY0TGkzQVFlbjlZUCtoVG5kdWo0cDRwckxGODV5STNVNFlOS3B4bHFZRm4vVjBoQUlUSUl5NTBlWUI3aVV0aEwKc3dJREFRQUIKLS0tLS1FTkQgUFVCTElDIEtFWS0tLS0tCg==
 
 server:
   port: 8080

@@ -1,10 +1,10 @@
-package com.tienvm.user;
+package com.tienvm.auth;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
 @SpringBootTest
-class UserServiceApplicationTests {
+class AuthServiceApplicationTests {
 
 	@Test
 	void contextLoads() {

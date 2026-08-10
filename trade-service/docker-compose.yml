@@ -1,0 +1,14 @@
+services:
+  postgres:
+    image: docker.io/library/postgres:17-alpine
+    environment:
+      - POSTGRES_DB=chadet_trade
+      - POSTGRES_USER=chadet_trade
+      - POSTGRES_PASSWORD=chadet_password
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_data:

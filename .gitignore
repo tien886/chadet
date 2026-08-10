@@ -4,6 +4,10 @@ target/
 !**/src/main/**/target/
 !**/src/test/**/target/
 
+### Runtime secrets ###
+.env
+keys/
+
 ### STS ###
 .apt_generated
 .classpath
