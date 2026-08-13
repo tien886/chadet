@@ -1,0 +1,16 @@
+services:
+  rabbitmq:
+    image: docker.io/library/rabbitmq:4-management-alpine
+    container_name: chadet-rabbitmq
+    ports:
+      - "5672:5672"     # AMQP protocol
+      - "15672:15672"   # Management Web UI
+      - "61613:61613"   # STOMP protocol (WebSocket relay)
+    environment:
+      - RABBITMQ_DEFAULT_USER=chadet
+      - RABBITMQ_DEFAULT_PASS=chadet_password
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+
+volumes:
+  rabbitmq_data:
