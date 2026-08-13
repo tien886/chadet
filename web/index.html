@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Chadet - Chat & Escrow Trading</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css" />
+  <!-- SockJS and STOMP Client for WebSocket Realtime -->
+  <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@stomp/stompjs@7.0.0/bundles/stomp.umd.min.js"></script>
+</head>
+<body>
+
+  <!-- Auth Screen (Login / Register) -->
+  <div id="authScreen" class="auth-wrapper">
+    <div class="auth-card">
+      <div class="brand" style="justify-content: center;">
+        <div class="brand-icon">⚡</div>
+        <span>Chadet</span>
+      </div>
+      <h2 id="authTitle" class="auth-title">Welcome Back</h2>
+
+      <!-- Login Form -->
+      <form id="loginForm">
+        <div class="form-group" style="margin-bottom: 12px;">
+          <label>Gmail Address</label>
+          <input type="email" id="loginGmail" placeholder="alice@gmail.com" required />
+        </div>
+        <div class="form-group" style="margin-bottom: 16px;">
+          <label>Password</label>
+          <input type="password" id="loginPassword" placeholder="••••••••" required />
+        </div>
+        <button type="submit" class="btn btn-primary" style="width: 100%;">Sign In</button>
+      </form>
+
+      <!-- Register Form -->
+      <form id="registerForm" class="hidden">
+        <div class="form-group" style="margin-bottom: 12px;">
+          <label>Username</label>
+          <input type="text" id="regUsername" placeholder="alice" required />
+        </div>
+        <div class="form-group" style="margin-bottom: 12px;">
+          <label>Gmail Address</label>
+          <input type="email" id="regGmail" placeholder="alice@gmail.com" required />
+        </div>
+        <div class="form-group" style="margin-bottom: 16px;">
+          <label>Password</label>
+          <input type="password" id="regPassword" placeholder="••••••••" required />
+        </div>
+        <button type="submit" class="btn btn-primary" style="width: 100%;">Create Account</button>
+      </form>
+
+      <div class="auth-switch">
+        <span id="switchText">Don't have an account?</span>
+        <a id="switchAuthLink">Register</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main App Header -->
+  <header class="app-header">
+    <div class="brand">
+      <div class="brand-icon">⚡</div>
+      <span>Chadet</span>
+    </div>
+
+    <div class="header-actions">
+      <!-- Wallet Info -->
+      <div class="wallet-badge" id="walletBadge">
+        <span>💼 Wallet:</span>
+        <span class="wallet-balance" id="headerBalance">$0.00</span>
+        <span class="wallet-held" id="headerHeld">($0.00 in escrow)</span>
+        <button class="btn btn-secondary btn-sm" id="btnOpenDeposit">+ Deposit</button>
+      </div>
+
+      <!-- User Profile -->
+      <div class="user-profile">
+        <div class="avatar-chip" id="userAvatar">?</div>
+        <span id="userNameDisplay">User</span>
+      </div>
+
+      <button class="btn btn-secondary btn-sm" id="btnLogout">Sign Out</button>
+    </div>
+  </header>
+
+  <!-- Main Chat Workspace -->
+  <main class="app-main">
+    <!-- Sidebar: User Search & Conversation List -->
+    <aside class="sidebar">
+      <form id="sidebarSearchForm" class="sidebar-search-box">
+        <div style="display: flex; gap: 6px;">
+          <input type="text" id="userSearchInput" placeholder="Enter username or email..." autocomplete="off" />
+          <button type="submit" class="btn btn-primary btn-sm" id="btnSearchSubmit" style="flex-shrink: 0;">Search 🔍</button>
+        </div>
+        <div id="userSearchResults" class="search-results-dropdown hidden"></div>
+      </form>
+      <div class="sidebar-toolbar">
+        <button class="btn btn-secondary btn-sm" id="btnNewDirect">💬 + 1-on-1 Chat</button>
+        <button class="btn btn-secondary btn-sm" id="btnNewGroup">👥 + Group</button>
+      </div>
+      <ul class="conversation-list" id="conversationList">
+        <!-- Dynamic conversations rendered here -->
+      </ul>
+    </aside>
+
+    <!-- Chat Area -->
+    <section class="chat-pane" id="chatPane">
+      <div class="chat-header">
+        <div>
+          <div class="chat-title" id="chatHeaderTitle">Select a conversation</div>
+          <div class="chat-subtitle" id="chatHeaderSubtitle">Realtime messaging and P2P trading</div>
+        </div>
+        <div id="chatHeaderActions" class="hidden">
+          <button class="btn btn-primary btn-sm" id="btnCreateTrade">⚡ New Escrow Trade</button>
+        </div>
+      </div>
+
+      <div class="messages-container" id="messagesContainer">
+        <div class="empty-chat">
+          <p>No conversation selected.</p>
+          <p style="font-size: 0.85rem; margin-top: 4px;">Choose a chat from the sidebar or start a new one.</p>
+        </div>
+      </div>
+
+      <div class="chat-input-bar hidden" id="chatInputBar">
+        <input type="text" id="messageInput" placeholder="Type a message or create an escrow trade..." autocomplete="off" />
+        <button class="btn btn-primary" id="btnSendMessage">Send 🚀</button>
+      </div>
+    </section>
+  </main>
+
+  <!-- Modals -->
+
+  <!-- Modal: New Direct Chat -->
+  <div id="modalDirectChat" class="modal-overlay hidden">
+    <div class="modal-content">
+      <div class="modal-header">
+        <span>Start 1-on-1 Direct Chat</span>
+        <button class="close-btn" data-close="modalDirectChat">&times;</button>
+      </div>
+      <div class="form-group">
+        <label>Enter User Gmail or Username</label>
+        <input type="text" id="modalUserSearchInput" placeholder="e.g. bob@gmail.com or bob" autocomplete="off" />
+      </div>
+      <div id="modalUserSearchResults" class="modal-search-results"></div>
+    </div>
+  </div>
+
+  <!-- Modal: New Group Chat -->
+  <div id="modalGroupChat" class="modal-overlay hidden">
+    <div class="modal-content">
+      <div class="modal-header">
+        <span>Create Group Chat</span>
+        <button class="close-btn" data-close="modalGroupChat">&times;</button>
+      </div>
+      <form id="formGroupChat">
+        <div class="form-group" style="margin-bottom: 12px;">
+          <label>Group Name</label>
+          <input type="text" id="groupName" placeholder="e.g. Project Alpha" required />
+        </div>
+        <div class="form-group">
+          <label>Add Member by Gmail or Username</label>
+          <input type="text" id="groupMemberSearchInput" placeholder="Search user to add..." autocomplete="off" />
+          <div id="groupSelectedMembers" style="display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px;"></div>
+          <div id="groupSearchResults" class="modal-search-results"></div>
+        </div>
+        <button type="submit" class="btn btn-primary" style="margin-top: 12px; width: 100%;">Create Group</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal: New Trade -->
+  <div id="modalNewTrade" class="modal-overlay hidden">
+    <div class="modal-content">
+      <div class="modal-header">
+        <span>⚡ Propose In-Chat Escrow Trade</span>
+        <button class="close-btn" data-close="modalNewTrade">&times;</button>
+      </div>
+      <form id="formNewTrade">
+        <div class="form-group" style="margin-bottom: 12px;">
+          <label>Trading With</label>
+          <div id="tradeReceiverDisplay" style="font-weight: 600; padding: 8px 12px; background: var(--bg-hover); border-radius: var(--radius-sm);">Recipient</div>
+          <input type="hidden" id="tradeReceiverId" required />
+        </div>
+        <div class="form-group">
+          <label>Trade Amount ($ USD)</label>
+          <input type="number" id="tradeAmount" step="0.01" min="0.01" placeholder="100.00" required />
+        </div>
+        <button type="submit" class="btn btn-primary" style="margin-top: 12px; width: 100%;">Hold Funds & Send Trade Card</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal: Deposit -->
+  <div id="modalDeposit" class="modal-overlay hidden">
+    <div class="modal-content">
+      <div class="modal-header">
+        <span>💼 Deposit Funds to Wallet</span>
+        <button class="close-btn" data-close="modalDeposit">&times;</button>
+      </div>
+      <form id="formDeposit">
+        <div class="form-group">
+          <label>Deposit Amount ($ USD)</label>
+          <input type="number" id="depositAmount" step="0.01" min="0.01" placeholder="500.00" required />
+        </div>
+        <button type="submit" class="btn btn-primary" style="margin-top: 12px; width: 100%;">Add to Balance</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Toast Notification Area -->
+  <div class="toast-container" id="toastContainer"></div>
+
+  <!-- Main Application Logic -->
+  <script src="app.js?v=6"></script>
+</body>
+</html>
