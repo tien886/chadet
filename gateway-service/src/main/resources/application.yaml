@@ -5,29 +5,39 @@ spring:
     gateway:
       server:
         webflux:
+          default-filters:
+            - DedupeResponseHeader=Access-Control-Allow-Origin Access-Control-Allow-Credentials, RETAIN_UNIQUE
           routes:
             - id: user-service
               uri: http://localhost:8081
               predicates:
-                - Path=/api/auth/**, /api/users/**
+                - Path=/api/auth/**,/api/users/**,/api/user/**
             - id: chat-service
               uri: http://localhost:8082
               predicates:
-                - Path=/api/conversations/**, /api/messages/**
+                - Path=/api/conversations/**,/api/messages/**,/ws/**
             - id: trade-service
               uri: http://localhost:8083
               predicates:
-                - Path=/api/trades/**
-            - id: chat-ws
-              uri: ws://localhost:8082
+                - Path=/api/trades/**,/api/wallet/**,/trade-ws/**
+            - id: auth-docs
+              uri: http://localhost:8081
               predicates:
-                - Path=/ws/**
-          globalcors:
-            cors-configurations:
-              '[/api/**]':
-                allowed-origin-patterns: ["http://localhost:*"]
-                allowed-methods: ["*"]
-                allowed-headers: ["*"]
+                - Path=/auth/docs, /auth/docs/**, /auth/scalar, /auth/scalar/**, /auth/v3/api-docs, /auth/v3/api-docs/**, /auth/scalar.html, /auth/api-docs, /auth/api-docs/**
+              filters:
+                - RewritePath=/auth/(?<segment>.*), /${segment}
+            - id: chat-docs
+              uri: http://localhost:8082
+              predicates:
+                - Path=/chat/docs, /chat/docs/**, /chat/scalar, /chat/scalar/**, /chat/v3/api-docs, /chat/v3/api-docs/**, /chat/scalar.html
+              filters:
+                - RewritePath=/chat/(?<segment>.*), /${segment}
+            - id: trade-docs
+              uri: http://localhost:8083
+              predicates:
+                - Path=/trade/docs, /trade/docs/**, /trade/scalar, /trade/scalar/**, /trade/v3/api-docs, /trade/v3/api-docs/**, /trade/scalar.html
+              filters:
+                - RewritePath=/trade/(?<segment>.*), /${segment}
 
 chadet:
   jwt:
@@ -35,3 +45,7 @@ chadet:
 
 server:
   port: 8080
+
+logging:
+  level:
+    com.tienvm.gateway: INFO
