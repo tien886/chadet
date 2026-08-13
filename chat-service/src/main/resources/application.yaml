@@ -6,6 +6,11 @@ spring:
     username: chadet_chat
     password: chadet_chat_password
     driver-class-name: org.postgresql.Driver
+  rabbitmq:
+    host: ${RABBITMQ_HOST:localhost}
+    port: ${RABBITMQ_PORT:5672}
+    username: ${RABBITMQ_USERNAME:chadet}
+    password: ${RABBITMQ_PASSWORD:chadet_password}
   jpa:
     hibernate:
       ddl-auto: validate
@@ -21,5 +26,13 @@ spring:
     allowed-origin-patterns: 
       - http://localhost:*
 
+chadet:
+  jwt:
+    public-key: LS0tLS1CRUdJTiBQVUJMSUMgS0VZLS0tLS0KTUlJQklqQU5CZ2txaGtpRzl3MEJBUUVGQUFPQ0FROEFNSUlCQ2dLQ0FRRUFzN2lBQWNNTmFkcDRaS0ViR2lMWApPY2dsV0V3V3F3RTZTZTYxdTMyYTBDNjZVSHFFZGlYRCtyWDhjd0xIS2VFRGlVdFFlUVRIZjZhamo0V3VzbVZaCm5IeXBlWmdTSERyWGRHSElLZ2dSbjdpZWdLdldOWUtDV2lEZEpqMk9rNDhBdTdxM3NYamtITm1HbmJIZG5tSUIKcFVabHFrYU1CVXRNZFRHMnNiWG40Z3dNZzZ1T05LMTdLZ29MS041RW9YYXpSRHB0cFZ6T1ZqRENtZjFtMmErSgpJRWlnZHVsQXFSR3lwbVBZR041dlliYVpCbEhXN0ZVR3BDVHZ5T0xrM3Z2SHhoUjRxYjNyajNMZE9MalZkc3NwCmY0TGkzQVFlbjlZUCtoVG5kdWo0cDRwckxGODV5STNVNFlOS3B4bHFZRm4vVjBoQUlUSUl5NTBlWUI3aVV0aEwKc3dJREFRQUIKLS0tLS1FTkQgUFVCTElDIEtFWS0tLS0tCg==
+
 server:
   port: 8082
+
+logging:
+  level:
+    com.tienvm.chat: INFO

@@ -1,0 +1,34 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Chadet Chat Service API</title>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1" />
+    <style>
+      body {
+        margin: 0;
+      }
+    </style>
+  </head>
+  <body>
+    <script id="api-reference"></script>
+    <script>
+      const specUrl = window.location.pathname.startsWith('/chat')
+        ? '/chat/v3/api-docs'
+        : '/v3/api-docs';
+      const el = document.getElementById('api-reference');
+      el.setAttribute('data-url', specUrl);
+      el.setAttribute(
+        'data-configuration',
+        JSON.stringify({
+          theme: 'purple',
+          layout: 'modern',
+          defaultHttpClient: { targetKey: 'javascript', clientKey: 'fetch' },
+        })
+      );
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/@scalar/api-reference"></script>
+  </body>
+</html>
