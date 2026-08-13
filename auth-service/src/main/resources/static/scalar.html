@@ -12,11 +12,22 @@
     </style>
   </head>
   <body>
-    <script
-      id="api-reference"
-      data-url="/v3/api-docs"
-      data-configuration='{"theme":"purple","layout":"modern","defaultHttpClient":{"targetKey":"javascript","clientKey":"fetch"}}'
-    ></script>
+    <script id="api-reference"></script>
+    <script>
+      const specUrl = window.location.pathname.startsWith('/auth')
+        ? '/auth/v3/api-docs'
+        : '/v3/api-docs';
+      const el = document.getElementById('api-reference');
+      el.setAttribute('data-url', specUrl);
+      el.setAttribute(
+        'data-configuration',
+        JSON.stringify({
+          theme: 'purple',
+          layout: 'modern',
+          defaultHttpClient: { targetKey: 'javascript', clientKey: 'fetch' },
+        })
+      );
+    </script>
     <script src="https://cdn.jsdelivr.net/npm/@scalar/api-reference"></script>
   </body>
 </html>

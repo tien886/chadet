@@ -9,6 +9,7 @@ import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -18,6 +19,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+@Slf4j
 @RestController
 @RequestMapping("/api/auth")
 public class AuthController {
@@ -32,24 +34,33 @@ public class AuthController {
 
 	@PostMapping("/register")
 	public ResponseEntity<AuthResponse> register(@Valid @RequestBody RegisterRequest request) {
+		log.info("POST /api/auth/register -> gmail: {}, username: {}", request.gmail(), request.username());
 		User user = authService.register(request.gmail(), request.username(), request.password());
-		return ResponseEntity.ok(new AuthResponse(tokenService.issue(user), user.getId().toString(), user.getGmail(), user.getUsername()));
+		String token = tokenService.issue(user);
+		log.info("User registered successfully -> id: {}, gmail: {}", user.getId(), user.getGmail());
+		return ResponseEntity.ok(new AuthResponse(token, user.getId().toString(), user.getGmail(), user.getUsername()));
 	}
 
 	@PostMapping("/login")
 	public ResponseEntity<AuthResponse> login(@Valid @RequestBody LoginRequest request) {
+		log.info("POST /api/auth/login -> gmail: {}", request.gmail());
 		User user = authService.login(request.gmail(), request.password());
-		return ResponseEntity.ok(new AuthResponse(tokenService.issue(user), user.getId().toString(), user.getGmail(), user.getUsername()));
+		String token = tokenService.issue(user);
+		log.info("User logged in successfully -> id: {}, gmail: {}", user.getId(), user.getGmail());
+		return ResponseEntity.ok(new AuthResponse(token, user.getId().toString(), user.getGmail(), user.getUsername()));
 	}
 
 	@ExceptionHandler(IllegalArgumentException.class)
 	ResponseEntity<String> handleIllegalArgument(IllegalArgumentException ex) {
+		log.warn("Auth business validation error: {}", ex.getMessage());
 		return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(ex.getMessage());
 	}
 
 	@ExceptionHandler(MethodArgumentNotValidException.class)
 	ResponseEntity<String> handleValidation(MethodArgumentNotValidException ex) {
-		return ResponseEntity.badRequest().body(ex.getFieldErrors().get(0).getDefaultMessage());
+		String errorMessage = ex.getFieldErrors().get(0).getDefaultMessage();
+		log.warn("Auth request validation error: {}", errorMessage);
+		return ResponseEntity.badRequest().body(errorMessage);
 	}
 
 	public record AuthResponse(String token, String id, String gmail, String username) {

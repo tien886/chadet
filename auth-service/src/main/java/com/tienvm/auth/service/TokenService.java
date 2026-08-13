@@ -5,11 +5,13 @@ import java.time.temporal.ChronoUnit;
 
 import com.tienvm.auth.entity.User;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.oauth2.jwt.JwtClaimsSet;
 import org.springframework.security.oauth2.jwt.JwtEncoder;
 import org.springframework.security.oauth2.jwt.JwtEncoderParameters;
 import org.springframework.stereotype.Service;
 
+@Slf4j
 @Service
 public class TokenService {
 
@@ -23,6 +25,7 @@ public class TokenService {
 
 	public String issue(User user) {
 		Instant now = Instant.now();
+		log.debug("Generating JWT token for userId: {}, username: {}", user.getId(), user.getUsername());
 		JwtClaimsSet claims = JwtClaimsSet.builder()
 				.issuer("chadet")
 				.issuedAt(now)
@@ -31,7 +34,9 @@ public class TokenService {
 				.claim("username", user.getUsername())
 				.claim("gmail", user.getGmail())
 				.build();
-		return jwtEncoder.encode(JwtEncoderParameters.from(claims)).getTokenValue();
+		String token = jwtEncoder.encode(JwtEncoderParameters.from(claims)).getTokenValue();
+		log.info("Issued JWT token for userId: {}", user.getId());
+		return token;
 	}
 
 }

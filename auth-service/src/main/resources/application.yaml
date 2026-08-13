@@ -6,6 +6,11 @@ spring:
     username: chadet_user
     password: chadet_password
     driver-class-name: org.postgresql.Driver
+  rabbitmq:
+    host: ${RABBITMQ_HOST:localhost}
+    port: ${RABBITMQ_PORT:5672}
+    username: ${RABBITMQ_USERNAME:chadet}
+    password: ${RABBITMQ_PASSWORD:chadet_password}
   flyway:
     enabled: true
     locations: classpath:db/migration
@@ -24,3 +29,7 @@ chadet:
   
 server:
   port: 8081
+
+logging:
+  level:
+    com.tienvm.auth: INFO
